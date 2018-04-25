@@ -35,77 +35,20 @@ function findingWinner(squares){
     
 
 class Board extends React.Component {
-  constructor(props){
-    super(props);
-    this.state={
-        squares: Array(9).fill(null),
-        xIsNext: true,
-        sqrTaken: Array(9).fill(false),
-        histSquares: Array(9).fill(null),
-        turn: 0,
-    };
-  }
   
   renderSquare(i) {
     return (
         <Square 
-            value={this.state.squares[i]} 
-            onClick={() => this.handleClick(i)}
+            value={this.props.squares[i]} 
+            onClick={() => this.props.onClick(i)}
         />
     );
   }
-
-    handleClick(i){
-        //to maintain immutable code, slice is called to make a copy
-        const squares = this.state.squares.slice();
-        const sqrTaken = this.state.sqrTaken.slice();
-        //if false => O, true => true
-        if (!sqrTaken[i]){
-            squares[i] = this.state.xIsNext ? 'X' : 'O';
-            sqrTaken[i] = true
-            
-            let histSquares = this.state.histSquares.slice();
-            histSquares[this.state.turn] = squares
-            let k = this.state.turn + 1
-            
-            this.setState({
-                squares: squares,
-                sqrTaken: sqrTaken,
-                //flips bool
-                xIsNext: !this.state.xIsNext,
-                histSquares: histSquares,
-                turn: k
-         
-            });
-        }
-
-    }
-    
-    reset(){
-        this.setState({
-            squares: Array(9).fill(null),
-            xIsNext: true,
-            sqrTaken: Array(9).fill(false),
-            
-            turn: 0,
-            histSquares: Array(9).fill(null)
-        })
-    }
+  
 
   render() {
-    const winner = findingWinner(this.state.squares)
-    let status
-    if (winner){
-        status = 'Winner is: ' + winner
-    }
-    else{
-        const next = this.state.xIsNext? 'X' : 'O';  
-        status = 'Next player: ' + next;
-    }
-
     return (
       <div>
-        <div className="status">{status}</div>
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -121,11 +64,6 @@ class Board extends React.Component {
           {this.renderSquare(7)}
           {this.renderSquare(8)}
         </div>
-            <div className="resetter">
-                <button className="resetButton" onClick={() => this.reset()}>
-                    Reset
-                </button>
-            </div>
       </div>
     );
   }
@@ -133,16 +71,85 @@ class Board extends React.Component {
 }
 
 class Game extends React.Component {
+  constructor(props){
+    super(props);
+    this.state={
+      history: [{
+        squares: Array(9).fill(null),
+        
+      }],
+      xIsNext: true,
+      win: false
+    }
+  }
+  
+  reset(){
+      this.setState({
+        history: [{
+          squares: Array(9).fill(null),
+          
+        }],
+        xIsNext: true,
+        win: false
+      })
+  }
+  
+  
+  handleClick(i){
+      //to maintain immutable code, slice is called to make a copy
+      const history = this.state.history;
+      const current = history[history.length - 1];
+      const squares = current.squares.slice();
+          
+    
+      //if false => O
+      if (!squares[i] && !this.state.win){  
+          squares[i] = this.state.xIsNext ? 'X' : 'O';
+          
+          const winner = findingWinner(squares);  
+          
+          this.setState({
+            history: history.concat({squares}),
+              //flips bool
+            xIsNext: !this.state.xIsNext,
+            win: winner
+          });
+      }
+
+  }
+  
   render() {
+    const history = this.state.history;
+    let current = history[history.length - 1]
+    
+    let status;
+    if (this.state.win){
+        status = 'Winner is: ' + this.state.win;
+    }
+    else{
+        const next = this.state.xIsNext? 'X' : 'O';  
+        status = 'Next player: ' + next;
+    }
+  
+    
     return (
       <div className="game">
         <div className="game-board">
-          <Board />
+          <Board 
+            squares={current.squares}
+            onClick={(i) => this.handleClick(i)}
+          />
         </div>
         <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
+        <div className="resetter">
+          <button className="resetButton" onClick={() => this.reset()}>
+            Reset
+          </button>
         </div>
+          <div>{status}</div>
+          <ol>{}</ol>
+        </div>
+
       </div>
     );
   }
