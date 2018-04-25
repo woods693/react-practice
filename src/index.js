@@ -41,6 +41,8 @@ class Board extends React.Component {
         squares: Array(9).fill(null),
         xIsNext: true,
         sqrTaken: Array(9).fill(false),
+        histSquares: Array(9).fill(null),
+        turn: 0,
     };
   }
   
@@ -62,12 +64,18 @@ class Board extends React.Component {
             squares[i] = this.state.xIsNext ? 'X' : 'O';
             sqrTaken[i] = true
             
+            let histSquares = this.state.histSquares.slice();
+            histSquares[this.state.turn] = squares
+            let k = this.state.turn + 1
+            
             this.setState({
                 squares: squares,
                 sqrTaken: sqrTaken,
                 //flips bool
-                xIsNext: !this.state.xIsNext
-        
+                xIsNext: !this.state.xIsNext,
+                histSquares: histSquares,
+                turn: k
+         
             });
         }
 
@@ -77,7 +85,10 @@ class Board extends React.Component {
         this.setState({
             squares: Array(9).fill(null),
             xIsNext: true,
-            sqrTaken: Array(9).fill(false),    
+            sqrTaken: Array(9).fill(false),
+            
+            turn: 0,
+            histSquares: Array(9).fill(null)
         })
     }
 
