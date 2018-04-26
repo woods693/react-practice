@@ -79,7 +79,8 @@ class Game extends React.Component {
         
       }],
       xIsNext: true,
-      win: false
+      win: false,
+      step: 0
     }
   }
   
@@ -97,7 +98,7 @@ class Game extends React.Component {
   
   handleClick(i){
       //to maintain immutable code, slice is called to make a copy
-      const history = this.state.history;
+      const history = this.state.history.slice(0, this.state.step + 1);
       const current = history[history.length - 1];
       const squares = current.squares.slice();
           
@@ -112,15 +113,25 @@ class Game extends React.Component {
             history: history.concat({squares}),
               //flips bool
             xIsNext: !this.state.xIsNext,
-            win: winner
+            win: winner,
+            step: history.length,
           });
       }
 
   }
   
+  jumpTo(move){
+    this.setState({
+      xIsNext: (move % 2) === 0,
+      step: move
+    })
+    
+    
+  }
+  
   render() {
     const history = this.state.history;
-    let current = history[history.length - 1]
+    let current = history[this.state.step]
     
     let status;
     if (this.state.win){
@@ -131,6 +142,15 @@ class Game extends React.Component {
         status = 'Next player: ' + next;
     }
   
+    const moves = history.map((step, move) => {
+      const choice = move ? 'Go to move #' + move : 'Go to game start';
+      return (
+        <li key={move}>
+          <button onClick={() => this.jumpTo(move)}>{choice}</button>
+        </li>
+        );
+    });
+    
     
     return (
       <div className="game">
@@ -147,7 +167,7 @@ class Game extends React.Component {
           </button>
         </div>
           <div>{status}</div>
-          <ol>{}</ol>
+          <ol>{moves}</ol>
         </div>
 
       </div>
